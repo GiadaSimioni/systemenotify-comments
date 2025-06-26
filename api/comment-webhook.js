@@ -262,11 +262,6 @@ res.setHeader('Access-Control-Allow-Credentials', 'true');
         try {
             const data = req.body;
             
-            // Verifica secret se configurato
-            if (WEBHOOK_SECRET && data.secret !== WEBHOOK_SECRET) {
-                return res.status(401).json({ error: 'Unauthorized' });
-            }
-            
             // Estrai dati
             const course = data.course || 'Corso sconosciuto';
             const lesson = data.lesson || 'Lezione sconosciuta';
