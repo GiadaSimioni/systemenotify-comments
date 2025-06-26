@@ -1,0 +1,23 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "api/comment-webhook.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/comment-notification",
+        "dest": "/api/comment-webhook.js"
+      },
+      {
+        "src": "/test",
+        "dest": "/api/comment-webhook.js"
+      },
+      {
+        "src": "/",
+        "dest": "/api/comment-webhook.js"
+      }
+    ]
+  }

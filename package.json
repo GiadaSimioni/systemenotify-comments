@@ -1,0 +1,16 @@
+{
+    "name": "systemenotify-comments",
+    "version": "1.0.0",
+    "description": "Notifiche Telegram per commenti nei corsi Systeme.io",
+    "main": "api/comment-webhook.js",
+    "scripts": {
+      "start": "node api/comment-webhook.js",
+      "test": "echo \"✅ SystemeNotify Comments è pronto!\""
+    },
+    "keywords": ["telegram", "systeme.io", "commenti", "notifiche"],
+    "author": "Giada",
+    "license": "ISC",
+    "engines": {
+      "node": ">=14.0.0"
+    }
+  }
