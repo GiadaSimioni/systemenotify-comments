@@ -36,10 +36,11 @@ module.exports = async (req, res) => {
     console.log('🔥 Richiesta:', req.method, req.url);
     
     // Abilita CORS per permettere richieste dal browser
-res.setHeader('Access-Control-Allow-Origin', '*');
-res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept, Origin');
-res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept, Origin');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    
     // Gestisci preflight OPTIONS
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
@@ -154,6 +155,52 @@ res.setHeader('Access-Control-Allow-Credentials', 'true');
         `);
     }
     
+    // 🆕 NUOVO CODICE: Ricevi notifica di nuovo commento via GET (per aggirare CORS)
+    if (req.method === 'GET' && req.url.startsWith('/comment-notification')) {
+        console.log('💬 Notifica commento ricevuta via GET!');
+        
+        try {
+            // Estrai parametri dalla query string
+            const urlObj = new URL(req.url, `https://${req.headers.host}`);
+            const data = {
+                course: urlObj.searchParams.get('course') || 'Corso sconosciuto',
+                lesson: urlObj.searchParams.get('lesson') || 'Lezione sconosciuta',
+                url: urlObj.searchParams.get('url') || 'N/D',
+                comment: urlObj.searchParams.get('comment') || 'Nuovo commento',
+                author: urlObj.searchParams.get('author') || 'Utente'
+            };
+            
+            // Crea messaggio
+            const message = `💬 <b>NUOVO COMMENTO!</b>
+
+📚 <b>Corso:</b> ${data.course}
+📄 <b>Lezione:</b> ${data.lesson}
+👤 <b>Autore:</b> ${data.author}
+💭 <b>Info:</b> ${data.comment}
+
+🔗 <b>Vai alla lezione:</b>
+${data.url}
+
+<i>SystemeNotify Comments 💬</i>`;
+
+            // Invia a tutti i destinatari
+            const promises = CHAT_IDS.map(chatId => sendTelegramMessage(chatId, message));
+            await Promise.all(promises);
+            
+            // Rispondi con un pixel trasparente (1x1 GIF)
+            const pixel = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+            res.setHeader('Content-Type', 'image/gif');
+            return res.status(200).send(pixel);
+            
+        } catch (error) {
+            console.error('❌ Errore:', error);
+            // In caso di errore, rispondi comunque con il pixel
+            const pixel = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+            res.setHeader('Content-Type', 'image/gif');
+            return res.status(200).send(pixel);
+        }
+    }
+    
     // Fornisci lo script da inserire
     if (req.method === 'GET' && req.url === '/script') {
         const scriptUrl = `https://${req.headers.host}/comment-notification`;
@@ -255,7 +302,7 @@ res.setHeader('Access-Control-Allow-Credentials', 'true');
         `);
     }
     
-    // Ricevi notifica di nuovo commento
+    // Ricevi notifica di nuovo commento (POST originale)
     if (req.method === 'POST' && req.url === '/comment-notification') {
         console.log('💬 Notifica commento ricevuta!');
         
